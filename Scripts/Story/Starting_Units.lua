@@ -12,7 +12,7 @@ Starting_Units_Handler = {
                         },
                         Structures = {"UNSC_CAMP"},
                         Space_Units = {
-                            ["BUCKLER_SQUADRON"] = { -- Units be in globalUnitTable
+                            ["BUCKLER_SQUADRON"] = { -- Units must be defined in the globalUnitTable.lua, names are case sensitive and must be copied exactly how they are in XML
                                 Weight = 50, -- Any Number between 1 and 100, Closer to 100 means a higher chance of being randomly selected. 
                                 Limit = -1 -- -1 Means no limit and 0 will disable it from being spawned
                             },
