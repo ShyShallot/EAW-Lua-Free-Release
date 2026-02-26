@@ -7,14 +7,14 @@ Starting_Units_Handler = {
                 Station = {
                     Default = {
                         Power = {
-                            Space = 10000,
+                            Space = 10000, -- Max Combat Power (Calculated from the AI_Combat_Power value in the Unit XML)
                             Ground = 300
                         },
                         Structures = {"UNSC_CAMP"},
                         Space_Units = {
-                            ["BUCKLER_SQUADRON"] = {
-                                Weight = 50,
-                                Limit = -1
+                            ["BUCKLER_SQUADRON"] = { -- Units be in globalUnitTable
+                                Weight = 50, -- Any Number between 1 and 100, Closer to 100 means a higher chance of being randomly selected. 
+                                Limit = -1 -- -1 Means no limit and 0 will disable it from being spawned
                             },
                             ["UNSC_SINGLE_CHARON"] = {
                                 Weight = 50,
