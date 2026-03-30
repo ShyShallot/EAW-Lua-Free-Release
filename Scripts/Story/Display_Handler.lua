@@ -35,32 +35,27 @@ Display_Handler = {
     Footer = {
 
     },
+
+    COLOR_MAP = {
+        red    = {r=255,g=0,b=0},
+        blue   = {r=0,g=0,b=255},
+        green  = {r=0,g=255,b=0},
+        yellow = {r=242,g=214,b=34},
+        black  = {r=0,g=0,b=0},
+        pink   = {r=248,g=115,b=255},
+        purple = {r=77,g=26,b=105},
+        orange = {r=219,g=107,b=22}
+    }
 }
 
 
 ---@param string string
----@param color? table
+---@param color? table|string
 ---@param var? any
 ---@param time? number
 function Display_Handler:Add_Header(string, color, var, time)
     if type(string) ~= "string" then
         return
-    end
-
-    if color == nil then
-        color = {r=255,b=255,g=255}
-    end
-
-    if color.r == nil then
-        color.r = 255
-    end
-
-    if color.b == nil then
-        color.b = 255
-    end
-
-    if color.g == nil then
-        color.g = 255
     end
 
     if type(time) ~= "number" then
@@ -84,32 +79,16 @@ function Display_Handler:Add_Header(string, color, var, time)
     end
     
 
-    table.insert(self.Headers, {Text = string, Color = color, Var = var, Time = time, Time_Added = GetCurrentTime.Galactic_Time()})
+    table.insert(self.Headers, {Text = string, Color = self:Process_Color(color), Var = var, Time = time, Time_Added = GetCurrentTime.Galactic_Time()})
 end
 
 ---@param string string
----@param color? table
+---@param color? table|string
 ---@param var? any
 ---@param time? number
 function Display_Handler:Add_Footer(string, color, var, time)
     if type(string) ~= "string" then
         return
-    end
-
-    if color == nil then
-        color = {r=255,b=255,g=255}
-    end
-
-    if color.r == nil then
-        color.r = 255
-    end
-
-    if color.b == nil then
-        color.b = 255
-    end
-
-    if color.g == nil then
-        color.g = 255
     end
 
     if type(time) ~= "number" then
@@ -130,13 +109,13 @@ function Display_Handler:Add_Footer(string, color, var, time)
     end
     
 
-    table.insert(self.Footer, {Text = string, Color = color, Var = var, Time = time, Time_Added = GetCurrentTime.Galactic_Time()})
+    table.insert(self.Footer, {Text = string, Color = self:Process_Color(color), Var = var, Time = time, Time_Added = GetCurrentTime.Galactic_Time()})
 end
 
 ---@param string string
 ---@param time number
 ---@param teletype? boolean
----@param color? table
+---@param color? table|string
 ---@param var? any
 function Display_Handler:Add_Body(string, time, teletype, color, var)
     if type(string) ~= "string" then
@@ -151,26 +130,12 @@ function Display_Handler:Add_Body(string, time, teletype, color, var)
         teletype = false
     end
 
-    if color == nil then
-        color = {r=255,b=255,g=255}
-    end
-
-    if color.r == nil then
-        color.r = 255
-    end
-
-    if color.b == nil then
-        color.b = 255
-    end
-
-    if color.g == nil then
-        color.g = 255
-    end
-
     local is_invalid = false
 
     for _, sBody in pairs(self.Body) do
         if sBody.Text == string then
+            sBody.Shown = false
+            sBody.Teletype = true
             is_invalid = true
             break
         end
@@ -180,7 +145,7 @@ function Display_Handler:Add_Body(string, time, teletype, color, var)
         return
     end
 
-    table.insert(self.Body, {Text = string, Color = color, Var = var, Time = time, Teletype = teletype, Time_Added = GetCurrentTime.Galactic_Time(), Shown = false})
+    table.insert(self.Body, {Text = string, Color = self:Process_Color(color), Var = var, Time = time, Teletype = teletype, Time_Added = GetCurrentTime.Galactic_Time(), Shown = false})
 end
 
 ---@private
@@ -347,6 +312,39 @@ function Display_Handler:Remove_Footer(text)
             end
         end
     end
+end
+
+function Display_Handler:Process_Color(color)
+
+    local out = {r=255,g=255,b=255}
+
+    if type(color) == "string" then
+
+        local map = self.COLOR_MAP[string.lower(color)]
+
+        if map then
+            out = Clone_Table(map)
+        end
+        
+    elseif type(color) == "table" then
+        if type(color.r) ~= "number" or color.r < 0 or color.r > 255 then
+            return out
+        end
+
+        if type(color.g) ~= "number" or color.g < 0 or color.g > 255 then
+            return out
+        end
+
+        if type(color.b) ~= "number" or color.b < 0 or color.b > 255 then
+            return out
+        end
+
+        out = Clone_Table(color)
+    else
+        return out
+    end
+
+    return out
 end
 
 ---@param text string
