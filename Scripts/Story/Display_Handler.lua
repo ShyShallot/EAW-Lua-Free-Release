@@ -71,6 +71,9 @@ function Display_Handler:Add_Header(string, color, var, time)
 
     for _, sHeader in pairs(self.Headers) do
         if sHeader.Text == string then
+            if sHeader.Var ~= var and var ~= nil then
+                sHeader.Var = var
+            end
             is_invalid = true
             break
         end
@@ -144,10 +147,8 @@ function Display_Handler:Add_Body(string, time, teletype, color, var)
         time = 5
     end
 
-    if teletype == true then
-        teletype = 1
-    else
-        teletype = 0
+    if teletype ~= true then
+        teletype = false
     end
 
     if color == nil then
@@ -184,15 +185,19 @@ end
 
 ---@private
 function Display_Handler:Remove_Text()
+
+    DebugMessage("%s -- Clearing Text", tostring(Script))
+
     for _, Header in pairs(self.Headers) do
         Remove_Screen_Text(Header.Text)
     end
 
     Remove_Screen_Text(" ")
-    Remove_Screen_Text("------------------------")
+    Remove_Screen_Text("--------------------------")
     Remove_Screen_Text("  ")
 
     for _, Body in pairs(self.Body) do
+        DebugMessage("%s -- Clearing: %s", tostring(Script), tostring(Body.Text))
         Remove_Screen_Text(Body.Text)
     end
 
@@ -211,7 +216,19 @@ function Display_Handler:Process()
         for i=1, Header_Length do
             local Header = self.Headers[i]
             if Header ~= nil then
-                if Header.Time_Added + Header.Time >= GetCurrentTime.Galactic_Time() then
+                local Is_Header_Valid = false
+
+                if Header.Time > -1 then
+                    if Header.Time_Added + Header.Time >= GetCurrentTime.Galactic_Time() then
+                        Is_Header_Valid = true
+                    end
+                end
+
+                if Header.Time == -1 then
+                    Is_Header_Valid = true
+                end
+                
+                if Is_Header_Valid then
                     Show_Screen_Text(Header.Text, Header.Var, -1, Header.Color, false)
                 else
                     table.remove(self.Headers, i)
@@ -221,27 +238,46 @@ function Display_Handler:Process()
     end
 
     Show_Screen_Text(" ", nil, -1)
-    Show_Screen_Text("------------------------", nil, -1)
+    Show_Screen_Text("--------------------------", nil, -1)
     Show_Screen_Text("  ", nil, -1)
-    
-    local Body_Length = tableLength(self.Body)
 
-    if Body_Length > 0 then
-        for i=1, Body_Length do
-            local Body = self.Body[i]
-            if Body ~= nil then
-                if Body.Time_Added + Body.Time >= GetCurrentTime.Galactic_Time() then
+    local Body_Index = 1
 
-                    if Body.Shown then
-                        Body.Teletype = false
-                    end
+    while Body_Index <= tableLength(self.Body) do
+        local Body = self.Body[Body_Index]
+        if Body ~= nil then
+            DebugMessage("%s -- Adding Body %s", tostring(Script), tostring(Body.Text))
 
-                    Show_Screen_Text(Body.Text, Body.Var, -1, Body.Color, Body.Teletype)
+            local Is_Body_Valid = false
 
-                    Body.Shown = true
-                else
-                    table.remove(self.Body, i)
+            if Body.Time > -1 then
+                DebugMessage("%s -- Body is not infinite. Current Time: %s, Time Added: %s, Lasts: %s", tostring(Script), tostring(GetCurrentTime.Galactic_Time()), tostring(Body.Time_Added), tostring(Body.Time))
+                if Body.Time_Added + Body.Time > GetCurrentTime.Galactic_Time() then
+                    DebugMessage("%s -- Body is Valid", tostring(Script))
+                    Is_Body_Valid = true
                 end
+            end
+
+            if Body.Time == -1 then
+                DebugMessage("%s -- Body is Infinite", tostring(Script))
+                Is_Body_Valid = true
+            end
+
+            if Is_Body_Valid then
+                DebugMessage("%s -- Body is Valid", tostring(Script))
+                if Body.Shown then
+                    Body.Teletype = false
+                else
+                    Body.Shown = true
+                end
+
+                Show_Screen_Text(Body.Text, Body.Var, -1, Body.Color, Body.Teletype)
+
+                Body_Index = Body_Index + 1
+            else
+                DebugMessage("%s -- Removing Body", tostring(Script))
+                Remove_Screen_Text(Body.Text)
+                table.remove(self.Body, Body_Index)
             end
         end
     end
@@ -252,7 +288,19 @@ function Display_Handler:Process()
         for i=1, Footer_Length do
             local Footer = self.Footer[i]
             if Footer ~= nil then
-                if Footer.Time_Added + Footer.Time >= GetCurrentTime.Galactic_Time() then
+                local Is_Footer_Valid = false
+
+                if Footer.Time > -1 then
+                    if Footer.Time_Added + Footer.Time >= GetCurrentTime.Galactic_Time() then
+                        Is_Footer_Valid = true
+                    end
+                end
+
+                if Footer.Time == -1 then
+                    Is_Footer_Valid = true
+                end
+                
+                if Is_Footer_Valid then
                     Show_Screen_Text(Footer.Text, Footer.Var, -1, Footer.Color, false)
                 else
                     table.remove(self.Footer, i)
@@ -275,6 +323,7 @@ function Display_Handler:Remove_Header(text)
         if Header ~= nil then
             if Header.Text == text then
                 table.remove(self.Headers,i)
+                Remove_Screen_Text(text)
                 break
             end
         end
