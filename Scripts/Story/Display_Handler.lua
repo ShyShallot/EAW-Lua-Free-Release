@@ -31,7 +31,7 @@ Display_Handler = {
     Body = {
 
     },
-    ---@type Body[]
+    ---@type Footer[]
     Footer = {
 
     },
