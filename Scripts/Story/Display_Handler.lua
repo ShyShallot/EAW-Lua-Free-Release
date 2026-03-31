@@ -82,6 +82,30 @@ function Display_Handler:Add_Header(string, color, var, time)
     table.insert(self.Headers, {Text = string, Color = self:Process_Color(color), Var = var, Time = time, Time_Added = GetCurrentTime.Galactic_Time()})
 end
 
+---@param old_string string
+---@param new_string string
+---@param new_color? table|string
+---@param new_var? any
+function Display_Handler:Update_Header(old_string, new_string, new_color, new_var)
+    if type(old_string) ~= "string" then
+        return
+    end
+
+    if type(new_string) ~= "string" then
+        return
+    end
+
+    for _, Header in pairs(self.Headers) do
+        if Header.Text == old_string then
+            Header.Text = new_string
+            Header.Color = self:Process_Color(new_color)
+            Header.Var = new_var
+
+            Remove_Screen_Text(old_string)
+        end
+    end
+end
+
 ---@param string string
 ---@param color? table|string
 ---@param var? any
@@ -314,6 +338,8 @@ function Display_Handler:Remove_Footer(text)
     end
 end
 
+---@param color table|string
+---@return table
 function Display_Handler:Process_Color(color)
 
     local out = {r=255,g=255,b=255}
